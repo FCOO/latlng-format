@@ -9,7 +9,7 @@ Can handle tree different formats:
 
 ## Installation
 ### bower
-`bower install https://github.com/NielsHolt/latlng-format.git --save`
+`bower install https://github.com/fcoo/latlng-format.git --save`
 
 ## Usage
 ```var myLatLngFormat = new LatLngFormat( formatId )```
@@ -72,9 +72,9 @@ Output:The position as formatted string in the new format (= `this`)
 		LatLngFormat.convertLng( {string}, {LatLngFormat} )
 
 ## Copyright and License
-This plugin is licensed under the [MIT license](https://github.com/NielsHolt/latlng-format/LICENSE).
+This plugin is licensed under the [MIT license](https://github.com/fcoo/latlng-format/LICENSE).
 
-Copyright (c) 2015 [Niels Holt](https://github.com/NielsHolt)
+Copyright (c) 2015 [FCOO](https://github.com/FCOO)
 
 ## Contact information
 
