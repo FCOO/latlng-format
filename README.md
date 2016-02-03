@@ -1,4 +1,4 @@
-# PACKAGENAME
+# latlng-format
 A class to validate, format, and transform positions (eq. leaflet LatLng)
 
 Can handle tree different formats:
