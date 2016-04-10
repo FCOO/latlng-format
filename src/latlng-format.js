@@ -1,10 +1,10 @@
 /****************************************************************************
 latlng-format, a class to validate, format, and transform positions (eq. leaflet LatLng)
 
-	(c) 2015, Niels Holt
+	(c) 2015, FCOO
 
-	https://github.com/NielsHolt/latlng-format
-	https://github.com/NielsHolt
+	https://github.com/fcoo/latlng-format
+	https://github.com/fcoo
 
 ****************************************************************************/
 
@@ -23,32 +23,6 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
 		n.indexOf('.') > -1 ? '.' :
 		n.indexOf(',') > -1 ? ',' :
 		'.';
-
-/*
-	window.latLngFormat = window.latLngFormat || {};
-
-	window.latLngFormat.DMSs	= 0; //Degrees Minutes Seconds Decimal Seconds:	N65d30'15.3"  d='degree sign'
-	window.latLngFormat.DMm		= 1; //Degrees Decimal minutes								:	N65d30.258'
-	window.latLngFormat.Dd		= 2; //Decimal degrees												: N41.1234d
-
-	window.latLngFormat.degreeChar	= '&#176;'; //or '&deg;'
-	window.latLngFormat.minutChar		=	"'";
-	window.latLngFormat.secondChar	=	'"';
-
-	//Determinate the decimal separator. Only "." or "," are used even that Windows (apparantly) accepts up to tree chars
-	var n = 1.1;
-	n = n.toLocaleString();
-	window.latLngFormat.defaultDecimalSeparator =
-		n.indexOf('.') > -1 ? '.' :
-		n.indexOf(',') > -1 ? ',' :
-		'.';
-
-	window.latLngFormat.decimalSeparator =
-		window.latLngFormat.forceDecimalSeparator ? window.latLngFormat.forceDecimalSeparator :
-		n.indexOf('.') > -1 ? '.' :
-		n.indexOf(',') > -1 ? ',' :
-		'.';
-*/
 
 	// _split - Input: position (number) Return: {hemisphere, degrees, degreesDecimal, minutes, minutesDecimal, seconds, secondsDecimal}
 	function _split( position ){
@@ -251,7 +225,7 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
 						convertMask	: ['DDD', 'MM', 'SS', 's'],
 						regexp			:	[	_regexp.anySpace + '(90|'		+ _regexp.DD	+ _regexp.anySpace + _regexp.MMSSs	+	')'	+ _regexp.anySpace + _regexp.hemisphereLat	+ _regexp.anySpace,
 														_regexp.anySpace + '(180|'	+	_regexp.DDD	+ _regexp.anySpace + _regexp.MMSSs	+ ')'	+ _regexp.anySpace + _regexp.hemisphereLong	+ _regexp.anySpace		],
-						placeholder	: ["89 59 59"+window.latLngFormat.decimalSeparator+"9N", "179 59 59"+window.latLngFormat.decimalSeparator+"9E"],
+						placeholder	: ["89 59 59"+dS+"9N", "179 59 59"+dS+"9E"],
 					};
 					break;
 
@@ -262,7 +236,7 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
 						convertMask	: ['DDD', 'MM', 'mmm'],
 						regexp			:	[ _regexp.anySpace + '(90|'		+ _regexp.DD	+ _regexp.anySpace + _regexp.MMmmm + ')' + _regexp.anySpace + _regexp.hemisphereLat	+ _regexp.anySpace,
 														_regexp.anySpace + '(180|'	+	_regexp.DDD	+ _regexp.anySpace + _regexp.MMmmm + ')' + _regexp.anySpace + _regexp.hemisphereLong	+ _regexp.anySpace	],
-						placeholder	: ["89 59"+window.latLngFormat.decimalSeparator+"999N", "179 59"+window.latLngFormat.decimalSeparator+"999E"],
+						placeholder	: ["89 59"+dS+"999N", "179 59"+dS+"999E"],
 					};
 					break;
 
@@ -279,54 +253,7 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
 			}
 
 			$.extend( this.options, newOptions );
-/*
-
-	window.latLngFormat.latLngFormatOptions = [
-					{ //Degrees Minutes Seconds (N41d25'01")
-			displayMask	:	"DDD"+dC+"MM'SS"+dS+"s\"H",
-			editMask		:	"DDD MM SS"+dS+"sH",
-			convertMask	: ['DDD', 'MM', 'SS', 's'],
-			regexp			:	[	_regexp.anySpace + '(90|'		+ _regexp.DD	+ _regexp.anySpace + _regexp.MMSSs	+	')'	+ _regexp.anySpace + _regexp.hemisphereLat	+ _regexp.anySpace,
-											_regexp.anySpace + '(180|'	+	_regexp.DDD	+ _regexp.anySpace + _regexp.MMSSs	+ ')'	+ _regexp.anySpace + _regexp.hemisphereLong	+ _regexp.anySpace		],
-			placeholder	: ["89 59 59"+window.latLngFormat.decimalSeparator+"9N", "179 59 59"+window.latLngFormat.decimalSeparator+"9E"],
-		},
-
-		{//Degrees Decimal minutes (N41d25.123')
-			displayMask	:	"DDD"+dC+"MM"+dS+"mmm'H",
-			editMask		:	"DDD MM"+dS+"mmmH",
-			convertMask	: ['DDD', 'MM', 'mmm'],
-			regexp			:	[ _regexp.anySpace + '(90|'		+ _regexp.DD	+ _regexp.anySpace + _regexp.MMmmm + ')' + _regexp.anySpace + _regexp.hemisphereLat	+ _regexp.anySpace,
-											_regexp.anySpace + '(180|'	+	_regexp.DDD	+ _regexp.anySpace + _regexp.MMmmm + ')' + _regexp.anySpace + _regexp.hemisphereLong	+ _regexp.anySpace	],
-			placeholder	: ["89 59"+window.latLngFormat.decimalSeparator+"999N", "179 59"+window.latLngFormat.decimalSeparator+"999E"],
-		},
-
-		{//Decimal degrees (N41.1234d)
-			displayMask	:	"DDD"+dS+"dddd"+dC+"H",
-			editMask		:	"DDD"+dS+"ddddH",
-			convertMask	: ['DDD', 'dddd'],
-			regexp			:	[ _regexp.anySpace + '(90|'		+ _regexp.DD	+ _regexp.anySpace	+ _regexp.dddd + ')' + _regexp.anySpace + _regexp.hemisphereLat		+ _regexp.anySpace,
-											_regexp.anySpace + '(180|'	+	_regexp.DDD	+ _regexp.anySpace	+ _regexp.dddd + ')' + _regexp.anySpace + _regexp.hemisphereLong	+ _regexp.anySpace	],
-			placeholder	: ["89.9999N", "179.9999E"],
-		}
-	];
-
-*/
-
-	/**********************************************************************
-	LatLngFormat( formatIndex )
-	**********************************************************************/
-	/*function LatLngFormat( formatIndex ){
-
-		this.options = window.latLngFormat.latLngFormatOptions[formatIndex];
-
-
-
-	}
-*/
 		}
 	};
 
-
 }(jQuery, this, document));
-
-
