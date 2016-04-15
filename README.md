@@ -2,6 +2,7 @@
 A class to validate, format, and transform positions (eq. leaflet LatLng)
 
 Can handle tree different formats:
+
 1. Degrees Minutes Seconds Decimal Seconds: `N65°30'15.3"`
 2. Degrees Decimal minutes: `N65°30.258'`
 3. Decimal degrees: `N65.5043°`
