@@ -59,14 +59,14 @@ Output: Decimal degrees (`{number[]}` or `{number}`).
 	LatLngFormat.textToDegreesLat( {string} )
 	LatLngFormat.textToDegreesLng( {string} )
 
-##### asText(..)
+##### format(..)
 Converts signed decimal degrees `({number})` to a string
 Input: A position as decimal degrees (`{number[]}` or `{number}`).
 Output: The position as formatted string. Eq. `"N41.1234°"`
 
-	LatLngFormat.asText( {number[]} )
-	LatLngFormat.asTextLat( {number} )
-	LatLngFormat.asTextLng( {number} )
+	LatLngFormat.format( {number[]} )
+	LatLngFormat.formatLat( {number} )
+	LatLngFormat.formatLng( {number} )
 
 ##### convert(..)
 Converts between two different formats
