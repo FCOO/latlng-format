@@ -91,9 +91,9 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
 
         //**********************************************************
         //format - Converts number value (signed decimal degrees) to a string, using this.displayMask or this.editMask
-        format   : function( latLng, useEditMask ){ return Array.isArray(latLng) ? [ this.formatLat(latLng[0], useEditMask), this.formatLng(latLng[1], useEditMask) ] : []; },
-        formatLat: function( lat, useEditMask    ){ return this._format( 0, lat, useEditMask ); },
-        formatLng: function( lng, useEditMask    ){ return this._format( 1, lng, useEditMask ); },
+        format   : function( latLng, useEditMask ){ return Array.isArray(latLng) ? [ this.latFormat(latLng[0], useEditMask), this.lngFormat(latLng[1], useEditMask) ] : []; },
+        latFormat: function( lat, useEditMask    ){ return this._format( 0, lat, useEditMask ); },
+        lngFormat: function( lng, useEditMask    ){ return this._format( 1, lng, useEditMask ); },
 
         //**********************************************************
         //convert - If value is valid in orgLatlngFormat => convert it to this' format and return it as text-string, else return original input-string
@@ -104,8 +104,8 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
         //**********************************************************
         //asText DEPRECATED
         asText   : function( latLng, useEditMask ){ return this.format   ( latLng, useEditMask ); },
-        asTextLat: function( lat, useEditMask    ){ return this.formatLat( lat,    useEditMask ); },
-        asTextLng: function( lng, useEditMask    ){ return this.formatLng( lng,    useEditMask ); },
+        asTextLat: function( lat, useEditMask    ){ return this.latFormat( lat,    useEditMask ); },
+        asTextLng: function( lng, useEditMask    ){ return this.lngFormat( lng,    useEditMask ); },
 
 
         //**********************************************************

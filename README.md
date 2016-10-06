@@ -65,8 +65,8 @@ Input: A position as decimal degrees (`{number[]}` or `{number}`).
 Output: The position as formatted string. Eq. `"N41.1234°"`
 
 	LatLngFormat.format( {number[]} )
-	LatLngFormat.formatLat( {number} )
-	LatLngFormat.formatLng( {number} )
+	LatLngFormat.latFormat( {number} )
+	LatLngFormat.lngFormat( {number} )
 
 ##### convert(..)
 Converts between two different formats
