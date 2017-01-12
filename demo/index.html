@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="da" style="font-size: 100%">
+<head>
+	<title>fcoo.dk - latlng-format - Demo</title>
+	<meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv='x-dns-prefetch-control' content='on'>
+
+	<meta name='copyright' content='FCOO'>
+	<meta name='owner' content='FCOO'>
+
+</head>
+
+<body>
+	<script src="bower_components.js"></script>
+	<script src="../src/latlng-format.js"></script>
+	<script>
+
+		function display(functionStr){
+			var func = new Function('return '+functionStr),
+				funcReturn = func(),
+				funcReturnAsString = funcReturn;
+			if (typeof funcReturn == 'string')
+			  funcReturnAsString = '"' + funcReturnAsString + '"';
+            if (typeof funcReturn == 'object'){ 
+                //Output is a array
+                funcReturnAsString = '[';
+                for (var i=0; i<funcReturn.length; i++ ){
+                    if (i)
+                        funcReturnAsString += ', ';
+                    
+                    if (typeof funcReturn[i] == 'string')
+                        funcReturnAsString += '"';                                    
+                    funcReturnAsString += funcReturn[i];                                    
+                    if (typeof funcReturn[i] == 'string')
+                        funcReturnAsString += '"';                                    
+                }
+                funcReturnAsString += ']';            
+            };
+              
+
+            $('body').append('<p><code>'+functionStr+' => ' + funcReturnAsString + '</code></p>');
+        }
+
+
+        display('latLngFormat(160).validLng()');
+        
+        display("latLngFormat('55°36', '12°20').value();");
+        display("latLngFormat('55 36', '12 20').value();");
+        display("latLngFormat('55 12 345', '12 4321').value()");
+        display("latLngFormat('55 12 3,4', '12 43 21').value()");
+
+        display("latLngFormat('55.123', '12.4321').convert(2)");
+
+        
+        display('latLngFormat.setFormat(0)');
+        display("latLngFormat(55.123, 12.4321).format()");
+        display('latLngFormat.setFormat(2)');
+        display("latLngFormat(55.123, 12.4321).format()");
+        
+  
+        numeral.register('locale', 'da-dk', {
+            delimiters   : { thousands: '.', decimal: ',' },
+            abbreviations: { thousand: 'k', million: 'mio', billion: 'mia', trillion: 'b' },
+            ordinal      : function (number) { return '.'; },
+            currency     : { symbol: 'DKK' }
+        });
+        display("numeral.locale('da-dk')");
+
+        
+        display('latLngFormat.setFormat(0)');
+        display("latLngFormat(55.123, 12.4321).format()");
+        display('latLngFormat.setFormat(2)');
+        display("latLngFormat(55.123, 12.4321).format()");
+
+
+
+    </script>
+</body>
+</html>

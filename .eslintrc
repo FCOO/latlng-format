@@ -19,6 +19,7 @@
     "rules": {
         "strict"                  : "error",
         "camelcase"               : "off",
+        "no-console"              : ["error", { "allow": ["warn", "error"] }],
         "no-mixed-spaces-and-tabs": "warn",
         "semi"                    : "warn",
         "no-extra-semi"           : "warn"

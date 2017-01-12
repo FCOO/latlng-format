@@ -12,17 +12,9 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
     "use strict";
 
     //Options for the tree posible formats. Placed in seperate namespace
-    window.LATLNGFORMAT_DMSS = 0; //Degrees Minutes Seconds Decimal Seconds: N65d30'15.3"  d='degree sign'
-    window.LATLNGFORMAT_DMM  = 1; //Degrees Decimal minutes                : N65d30.258'
-    window.LATLNGFORMAT_DD   = 2; //Decimal degrees                        : N41.1234d
-
-    //Determinate the decimal separator. Only "." or "," are used even that Windows (apparantly) accepts up to tree chars
-    var n = 1.1;
-    n = n.toLocaleString();
-    window.LATLNGFORMAT_DEFAULTDECIMALSEPARATOR =
-        n.indexOf('.') > -1 ? '.' :
-        n.indexOf(',') > -1 ? ',' :
-        '.';
+    var LATLNGFORMAT_DMSS = 0, //Degrees Minutes Seconds Decimal Seconds: N65d30'15.3"  d='degree sign'
+        LATLNGFORMAT_DMM  = 1, //Degrees Decimal minutes                : N65d30.258'
+        LATLNGFORMAT_DD   = 2; //Decimal degrees                        : N41.1234d
 
     // _split - Input: position (number) Return: {hemisphere, degrees, degreesDecimal, minutes, minutesDecimal, seconds, secondsDecimal}
     function _split( position ){
@@ -44,130 +36,100 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
         return result;
     }
 
-    /**********************************************************************
-    LatLngFormat( formatId )
-    **********************************************************************/
-    function LatLngFormat( formatId ){
-        this.options = {
-            decimalSeparator: window.LATLNGFORMAT_DEFAULTDECIMALSEPARATOR,
-            degreeChar            : '&#176;' //or '&deg;'
-        };
+    var latLngFormat;
 
-        this.setFormat( formatId );
+   
+    /************************************
+    Constructors
+    ************************************/
+
+    // LatlngFormat prototype object
+    function LatLngFormat( inputs ){
+        this._inputs = inputs;
+        this.inputIsValid = (this._inputs !== null);
+        this.inputIsSingle = this.inputIsValid && (this._inputs.length == 1);
+
+
+        if (!this.inputIsValid && console.warn)
+            console.warn('latLngFormat: Invalid arguments');         
     }
 
-  // expose access to the constructor
-  window.LatLngFormat = LatLngFormat;
+    
+    latLngFormat = function() {
+        //Possible arguments: ( Number ), ( Number, Number ) ( [Number, Number] ), ( String ), ( String, String ) ( [String, String] ) 
+        var inputs = null,
+            inputValid = false;
+        if (arguments.length && (arguments.length <= 2)){
+            if (arguments.length == 1){
+                if ($.isArray(arguments[0]))
+                    inputs = arguments[0];
+                else
+                    inputs = [ arguments[0] ];
+            }
+            if (arguments.length == 2)
+              inputs = [ arguments[0], arguments[1] ];
+        
+            inputValid = true;
+            $.each( inputs, function( index, val ){
+                if ((typeof val != 'number') && (typeof val != 'string')){
+                    inputValid = false;
+                    return false;
+                }        
+            });
+        }
+        return new LatLngFormat( inputValid ? inputs : null );
+    };
 
+    //Defalut options
+    latLngFormat.options = {
+        degreeChar: '&#176;', //or '&deg;'
+             //lat, lng
+        min: [-90, -180],
+        max: [ 90,  180]
+    };
+    latLngFormat.LATLNGFORMAT_DMSS = LATLNGFORMAT_DMSS;
+    latLngFormat.LATLNGFORMAT_DMM  = LATLNGFORMAT_DMM;
+    latLngFormat.LATLNGFORMAT_DD   = LATLNGFORMAT_DD;
 
-    //Extend the prototype
-    window.LatLngFormat.prototype = {
+   
+    /************************************
+    LatlngFormat Prototype
+    ************************************/
+    latLngFormat.fn = LatLngFormat.prototype = {
+        _getLat: function(){ return this._inputs[0]; },
+        _getLng: function(){ return this.inputIsSingle ? this._inputs[0] : this._inputs[1]; },
 
+        //_method - call this.method with correct parametre. method = function( regexpIndex,  value [, extraParam] ): return (Boolean|Number|String)
+        _method   : function (method, param1, param2) { return [ method.call( this, 0, this._getLat(), param1, param2 ), method.call( this, 1, this._getLng(), param1, param2 ) ]; },
+        _methodLat: function (method, param1, param2) { return method.call( this, 0, this._getLat(), param1, param2 ); },
+        _methodLng: function (method, param1, param2) { return method.call( this, 1, this._getLng(), param1, param2 ); },
+    
         //**********************************************************
-        //setFormat
-        setFormat: function( formatId ){
-            this.options.formatId = formatId;
-            this._updateFormat();
+        //_valid - Return true if the value is a valid position
+        _valid: function(latOrLng, value){
+            if (typeof value == 'number')
+                return (value >= latLngFormat.options.min[latOrLng]) && (value <= latLngFormat.options.max[latOrLng]);
+            else
+                //The regexp is prefixed with ^(?: and suffixed with )$ to make it full-match-only.
+                return (new RegExp( '^(?:' + latLngFormat.options.regexp[latOrLng] + ')$' )).test(value);
         },
 
-        //**********************************************************
-        //setDecimalSeparator
-        setDecimalSeparator: function( decimalSeparator ){
-            this.options.decimalSeparator = decimalSeparator;
-            this._updateFormat();
-        },
-
-        //**********************************************************
         //valid - Return true if the input is a valid position
-        valid   : function( latLng ){ return Array.isArray(latLng) ? [ this.validLat(latLng[0]), this.validLng(latLng[1]) ] : []; },
-        validLat: function( lat )   { return this._valid( 0, lat ); },
-        validLng: function( lng )   { return this._valid( 1, lng ); },
+        valid   : function(){ return this._method( this._valid ); },
+        validLat: function(){ return this._methodLat( this._valid ); },
+        validLng: function(){ return this._methodLng( this._valid ); },
 
         //**********************************************************
-        //textToDegrees - Converts value (string masked as editMask) to decimal degrees.
-        textToDegrees   : function( values ){ return Array.isArray(values) ? [ this.textToDegreesLat(values[0]), this.textToDegreesLng(values[1]) ] : []; },
-        textToDegreesLat: function( value  ){ return this._textToDegrees( 0, value ); },
-        textToDegreesLng: function( value  ){ return this._textToDegrees( 1, value ); },
-
-        //**********************************************************
-        //format - Converts number value (signed decimal degrees) to a string, using this.displayMask or this.editMask
-        format   : function( latLng, useEditMask ){ return Array.isArray(latLng) ? [ this.latFormat(latLng[0], useEditMask), this.lngFormat(latLng[1], useEditMask) ] : []; },
-        latFormat: function( lat, useEditMask    ){ return this._format( 0, lat, useEditMask ); },
-        lngFormat: function( lng, useEditMask    ){ return this._format( 1, lng, useEditMask ); },
-
-        //**********************************************************
-        //convert - If value is valid in orgLatlngFormat => convert it to this' format and return it as text-string, else return original input-string
-        convert   : function( values, orgLatLngFormat ){ return Array.isArray(values) ? [ this.convertLat(values[0], orgLatLngFormat), this.convertLng(values[1], orgLatLngFormat) ] : []; },
-        convertLat: function( value, orgLatLngFormat  ){ return this._convert( 0, value, orgLatLngFormat ); },
-        convertLng: function( value, orgLatLngFormat  ){ return this._convert( 1, value, orgLatLngFormat ); },
-
-        //**********************************************************
-        //asText DEPRECATED
-        asText   : function( latLng, useEditMask ){ return this.format   ( latLng, useEditMask ); },
-        asTextLat: function( lat, useEditMask    ){ return this.latFormat( lat,    useEditMask ); },
-        asTextLng: function( lng, useEditMask    ){ return this.lngFormat( lng,    useEditMask ); },
-
-
-        //**********************************************************
-        //_valid - Return true if the positionInput is a valid position
-        _valid: function(regexpIndex, value){
-            //The regexp is prefixed with ^(?: and suffixed with )$ to make it full-match-only.
-            return (new RegExp( '^(?:' + this.options.regexp[regexpIndex] + ')$' )).test(value);
-        },
-
-        //**********************************************************
-        //_ textToDegrees - Converts value (string masked as editMask) to decimal degrees.
-        //Using convertMask to convert the different part of the text. Any space is ignored
-        _textToDegrees: function(regexpIndex,  value){
-            //toDecimal - Convert a integer value v to a decimal. Eq    toDecimal(89)    = 0.89, toDecimal(9) = 0.9, toDecimal(1234)    = 0.1234
-            function toDecimal(v) {
-                var l = v.toString().length;
-                return v / Math.pow(10, l);
-            }
-
-            value = value.toUpperCase().trim();
-            if ((value === '') || !this._valid(regexpIndex,  value))
-                return null;
-
-            //Convert N or E to +1 and S or W to -1
-            var sign = 1;
-            if ( (value.indexOf('S') > -1) || (value.indexOf('W') > -1) )
-                sign = -1;
-
-            var split = value.split(/\D/),
-                    result = 0,
-                    convertMaskIndex = 0,
-                    i, nextValue;
-            for (i=0; i<split.length; i++ ){
-                nextValue = parseInt(split[i]);
-                if (!isNaN(nextValue)){
-                    switch (this.options.convertMask[convertMaskIndex]){
-                        case 'DDD' : result = result + nextValue;                 break;
-                        case 'MM'  : result = result + nextValue/60;              break;
-                        case 'mmm' : result = result + toDecimal(nextValue)/60;   break;
-                        case 's'   : result = result + toDecimal(nextValue)/3600; break;
-                        case 'SS'  : result = result + nextValue/3600;            break;
-                        case 'dddd': result = result + toDecimal(nextValue);      break;
-                    }
-                    convertMaskIndex++;
-                    if (convertMaskIndex >= this.options.convertMask.length)
-                        break;
-                }
-            }
-            return sign*result;
-        },
-
-        //**********************************************************
-        //_format - Converts numberValue (signed decimal degrees) to a string, using this.displayMask or this.editMask
-        _format: function(regexpIndex, numberValue, useEditMask){
+        //_format - Converts value to a string, using this.displayMask or this.editMask
+        _format: function(latOrLng, value, useEditMask){
             function trim(value, lgd)  {var result = ''+value; while (result.length < lgd) result = '0'+result; return result; }
             function append(value, lgd){var result = ''+value; while (result.length < lgd) result = result+'0'; return result; }
 
-            if (typeof numberValue != 'number')
-                return '';
+            if (typeof value == 'string')
+                return this._valid(latOrLng, value) ? value : '';
 
-            var parts = _split(numberValue);
-            var result = (useEditMask ? this.options.editMask : this.options.displayMask).replace('H', regexpIndex ? (parts.hemisphere == 1 ? 'E' : 'W') : (parts.hemisphere == 1 ? 'N' : 'S') );
+            var parts = _split(value);
+            var result = (useEditMask ? latLngFormat.options.editMask : latLngFormat.options.displayMask).replace('H', latOrLng ? (parts.hemisphere == 1 ? 'E' : 'W') : (parts.hemisphere == 1 ? 'N' : 'S') );
             result = result.replace(/DDD/ , parts.degrees                   );
             result = result.replace(/dddd/, append(parts.degreesDecimal,4)  );
             result = result.replace(/MM/  , trim(parts.minutes, 2)          );
@@ -176,24 +138,111 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
             result = result.replace(/s/   , trim(parts.secondsDecimal, 1)   );
             return result;
         },
+        //format - Converts number value to a string, using this.displayMask or this.editMask
+        format   : function( useEditMask ){ return this._method( this._format, useEditMask ); },
+        formatLat: function( useEditMask ){ return this._methodLat( this._format, useEditMask ); },
+        formatLng: function( useEditMask ){ return this._methodLng( this._format, useEditMask ); },
+
+        //**********************************************************
+        //_ value - Converts value (string masked as editMask) to decimal degrees.
+        //Using convertMask to convert the different part of the text. Any space is ignored
+        _value: function(latOrLng,  value){
+            //toDecimal - Convert a integer value v to a decimal. Eq    toDecimal(89)    = 0.89, toDecimal(9) = 0.9, toDecimal(1234)    = 0.1234
+            function toDecimal(v) {
+                var l = v.toString().length;
+                return v / Math.pow(10, l);
+            }
+
+            if (typeof value != 'string')
+              return value;
+
+            value = value.toUpperCase().trim();
+
+            //Convert N or E to +1 and S or W to -1
+            var sign = 1;
+            if ( (value.indexOf('S') > -1) || (value.indexOf('W') > -1) )
+                sign = -1;
+
+            //Remove all no-digital charts
+            value = value.replace(/\D+/g, ' ');
+
+            if ((value === '') || !this._valid(latOrLng,  value))
+                return null;
+            
+            var split = value.split(/\D/),
+                result = 0,
+                convertMaskIndex = 0,
+                i, nextValue;
+            for (i=0; i<split.length; i++ ){
+                nextValue = parseInt(split[i]);
+                if (!isNaN(nextValue)){
+                    switch (latLngFormat.options.convertMask[convertMaskIndex]){
+                        case 'DDD' : result = result + nextValue;                 break;
+                        case 'MM'  : result = result + nextValue/60;              break;
+                        case 'mmm' : result = result + toDecimal(nextValue)/60;   break;
+                        case 's'   : result = result + toDecimal(nextValue)/3600; break;
+                        case 'SS'  : result = result + nextValue/3600;            break;
+                        case 'dddd': result = result + toDecimal(nextValue);      break;
+                    }
+                    convertMaskIndex++;
+                    if (convertMaskIndex >= latLngFormat.options.convertMask.length)
+                        break;
+                }
+            }
+            return sign*result;
+        },
+        //value - Converts value (string masked as editMask) to decimal degrees.
+        value   : function(){ return this._method( this._value ); },
+        valueLat: function(){ return this._methodLat( this._value ); },
+        valueLng: function(){ return this._methodLng( this._value ); },
 
 
         //**********************************************************
-        //_convert - If value is valid in orgLatlngFormat => convert it to this' format and return it as text-string, else return original input-string
-        _convert: function( regexpIndex, value, orgLatLngFormat){
-            if (orgLatLngFormat && orgLatLngFormat._valid( regexpIndex, value )){
-                var numberValue = orgLatLngFormat._textToDegrees( regexpIndex, value );
-                return this._format( regexpIndex, numberValue, true/*useEditMask*/);
+        //_convert - If value is valid string in orgLatlngFormat => convert it to this' format and return it as text-string, else return original input-string
+        _convert: function( latOrLng, value, orgFormatId ){
+            if (typeof value != 'string')
+              return value;
+
+            if (orgFormatId){
+                //Change to original format
+                var formatId = latLngFormat.options.formatId;
+                latLngFormat.setFormat( orgFormatId );
+
+                if (this._valid( latOrLng, value )){
+                    var numberValue = this._value( latOrLng, value );
+
+                    //Reset format
+                    latLngFormat.setFormat( formatId );
+
+                    //Convert to current format
+                    value = this._format( latOrLng, numberValue, true/*useEditMask*/);
+                }
+                else
+                    //Reset format
+                    latLngFormat.setFormat( formatId );
             }
             return value;
         },
+        //convert - If value is valid in orgLatlngFormat => convert it to this' format and return it as text-string, else return original input-string
+        convert   : function( orgLatLngFormat ){ return this._method( this._convert, orgLatLngFormat ); },
+        convertLat: function( orgLatLngFormat ){ return this._methodLat( this._convert, orgLatLngFormat ); },
+        convertLng: function( orgLatLngFormat ){ return this._methodLng( this._convert, orgLatLngFormat ); },
 
+        
+    };//end of latLngFormat.fn = LatLngFormat.prototype = {
+    
+   
+    /************************************
+    Static methods
+    ************************************/
+    $.extend( latLngFormat, {
+        //setFormat
+        setFormat: function( formatId ){
+            if (formatId !== null)
+              this.options.formatId = formatId; 
 
-        //**********************************************************
-        //_updateFormat - Create editMask,convertMask, regexp, placeholder in options based on options.formatId and options.decimalSeparator
-        _updateFormat: function(){
-
-            /*********************************************************
+            /*
+            Create editMask,convertMask, regexp, placeholder in options based on options.formatId and numeral.js
             Regular expressions for different type of position input
             The regexp are 'build' using regexp for the sub-parts:
                 H=Hemisphere        : [n,N,s,S]
@@ -202,8 +251,8 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
                 MM=Minutes          : 0-9, 00-09, 10-59
                 SS=Seconds          : 0-59
                 .=seperator         : blank, "." or ","
-                mmm=decimal min     :    0-999
-            *********************************************************/
+                mmm=decimal min     : 0-999
+            */
             var _regexp = {
                 anySpace      : '\\s*',
                 hemisphereLat : '([nNsS])?',    //H=Hemisphere  : [n,N,s,S] (optional,
@@ -222,12 +271,28 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
             _regexp.MMmmm     = '(' + _regexp.MM + '(' + _regexp.seperator + '\\d{1,3}' + ')?' + ')?';                           //MMmmm=Minutes and Decimal minutes = [MM[0-999]]
             _regexp.MMSSs     = '(' + _regexp.MM + '(' + _regexp.SS + '(' + _regexp.seperator + '\\d{1,1}' + ')?' + ')?' + ')?'; //MMSSss= Minutes Second and Decimal Seconds = [MM[ SS[0-99]]]
 
-            var dS = this.options.decimalSeparator,
+            var dS = '.', //Default
                 dC = this.options.degreeChar,
                 newOptions = {};
 
+            //Try to get delimiters from current locale in numeral
+            var n = window.numeral,
+                n_localeData = n && n.localeData ? n.localeData() : null,
+                n_delimiters_decimal = n_localeData && n_localeData.delimiters && n_localeData.delimiters.decimal ? n_localeData.delimiters.decimal : null;
+
+
+
+            if (n_delimiters_decimal)
+              dS = n_delimiters_decimal;
+            else {
+                var S = Number(1.1).toLocaleString();
+                dS = S.indexOf('.') > -1 ? '.' :
+                     S.indexOf(',') > -1 ? ',' :
+                     '.';
+            }
+
             switch (this.options.formatId){
-                case window.LATLNGFORMAT_DMSS:
+                case LATLNGFORMAT_DMSS:
                     newOptions = { //Degrees Minutes Seconds (N41d25'01")
                         displayMask: "DDD"+dC+"MM'SS"+dS+"s\"H",
                         editMask   : "DDD MM SS"+dS+"sH",
@@ -238,7 +303,7 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
                     };
                     break;
 
-                case window.LATLNGFORMAT_DMM:
+                case LATLNGFORMAT_DMM:
                     newOptions = { //Degrees Decimal minutes (N41d25.123')
                         displayMask: "DDD"+dC+"MM"+dS+"mmm'H",
                         editMask   : "DDD MM"+dS+"mmmH",
@@ -249,7 +314,7 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
                     };
                     break;
 
-                case window.LATLNGFORMAT_DD:
+                case LATLNGFORMAT_DD:
                     newOptions = { //Decimal degrees (N41.1234d)
                         displayMask: "DDD"+dS+"dddd"+dC+"H",
                         editMask   : "DDD"+dS+"ddddH",
@@ -260,9 +325,33 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
                     };
                     break;
             }
-
             $.extend( this.options, newOptions );
+        
+            return formatId;
         }
-    };
+    }); //end of $.extend( latLngFormat, {
 
+    // expose access to the constructor and set default format
+    window.latLngFormat = latLngFormat;
+    window.latLngFormat.setFormat( LATLNGFORMAT_DMSS );
+
+    //Overwrite numeral.js method XX to update format with new decimal delimiters
+    var n = window.numeral;
+    if (n && n.locale){
+        n.locale = 
+            function( locale ){
+                return function(){
+                    //Original function 
+                    var result = locale.apply(this, arguments);
+
+                    //Update format
+                    window.latLngFormat.setFormat();
+
+                    return result;
+                };
+            }( n.locale );
+    }
+
+
+    
 }(jQuery, this, document));
