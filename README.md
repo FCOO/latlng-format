@@ -43,12 +43,20 @@ Output: `{boolean}` or `{boolean[]}` if `input` is a valid position
 #### format
 Converts signed decimal degrees `({number})` to a string
 Input: A position as decimal degrees (`{number[]}` or `{number}`).
-Output: The position as formatted string. Eq. `"N41.1234°"` (`{string[]}` or `{string}`).
+Output: The position as formatted string. Eq. `"N41°30'00""` (`{string[]}` or `{string}`).
 
 	latLngFormat.format()
 	latLngFormat.formatLat()
 	latLngFormat.formatLng()
 
+#### formatTrunc
+Converts signed decimal degrees `({number})` to a string AND trunctate it
+Input: A position as decimal degrees (`{number[]}` or `{number}`).
+Output: The position as formatted string. Eq. `"N41°30'"` (`{string[]}` or `{string}`).
+
+	latLngFormat.formatTrunc()
+	latLngFormat.formatTruncLat()
+	latLngFormat.formatTruncLng()
 
 #### value
 Converts value = string masked as editMask to decimal degrees.

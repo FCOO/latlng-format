@@ -38,7 +38,7 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
 
     var latLngFormat;
 
-   
+
     /************************************
     Constructors
     ************************************/
@@ -51,12 +51,12 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
 
 
         if (!this.inputIsValid && console.warn)
-            console.warn('latLngFormat: Invalid arguments');         
+            console.warn('latLngFormat: Invalid arguments');
     }
 
-    
+
     latLngFormat = function() {
-        //Possible arguments: ( Number ), ( Number, Number ) ( [Number, Number] ), ( String ), ( String, String ) ( [String, String] ) 
+        //Possible arguments: ( Number ), ( Number, Number ) ( [Number, Number] ), ( String ), ( String, String ) ( [String, String] )
         var inputs = null,
             inputValid = false;
         if (arguments.length && (arguments.length <= 2)){
@@ -68,13 +68,13 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
             }
             if (arguments.length == 2)
               inputs = [ arguments[0], arguments[1] ];
-        
+
             inputValid = true;
             $.each( inputs, function( index, val ){
                 if ((typeof val != 'number') && (typeof val != 'string')){
                     inputValid = false;
                     return false;
-                }        
+                }
             });
         }
         return new LatLngFormat( inputValid ? inputs : null );
@@ -91,7 +91,7 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
     latLngFormat.LATLNGFORMAT_DMM  = LATLNGFORMAT_DMM;
     latLngFormat.LATLNGFORMAT_DD   = LATLNGFORMAT_DD;
 
-   
+
     /************************************
     LatlngFormat Prototype
     ************************************/
@@ -103,7 +103,7 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
         _method   : function (method, param1, param2) { return [ method.call( this, 0, this._getLat(), param1, param2 ), method.call( this, 1, this._getLng(), param1, param2 ) ]; },
         _methodLat: function (method, param1, param2) { return method.call( this, 0, this._getLat(), param1, param2 ); },
         _methodLng: function (method, param1, param2) { return method.call( this, 1, this._getLng(), param1, param2 ); },
-    
+
         //**********************************************************
         //_valid - Return true if the value is a valid position
         _valid: function(latOrLng, value){
@@ -121,27 +121,78 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
 
         //**********************************************************
         //_format - Converts value to a string, using this.displayMask or this.editMask
-        _format: function(latOrLng, value, useEditMask){
-            function trim(value, lgd)  {var result = ''+value; while (result.length < lgd) result = '0'+result; return result; }
-            function append(value, lgd){var result = ''+value; while (result.length < lgd) result = result+'0'; return result; }
+        _format: function(latOrLng, value, useEditMask, trunc){
+
+            function trim(value, lgd){
+                var result = ''+value;
+                if (trunc){
+                    if (value == 0)
+                        result = '';
+                }
+                else
+                    while (result.length < lgd)
+                        result = '0'+result;
+                return result;
+            }
+            function append(value, lgd){
+                var result = ''+value;
+                if (trunc)
+                    result = result.replace( /0*$/g, '');
+                else
+                    while (result.length < lgd)
+                        result = result+'0';
+                return result;
+            }
 
             if (typeof value == 'string')
                 return this._valid(latOrLng, value) ? value : '';
 
             var parts = _split(value);
-            var result = (useEditMask ? latLngFormat.options.editMask : latLngFormat.options.displayMask).replace('H', latOrLng ? (parts.hemisphere == 1 ? 'E' : 'W') : (parts.hemisphere == 1 ? 'N' : 'S') );
+
+            var result = (useEditMask ? latLngFormat.options.editMask : latLngFormat.options.displayMask)
+                            .replace('H', latOrLng ?
+                                            (parts.hemisphere == 1 ? 'E' : 'W') :
+                                            (parts.hemisphere == 1 ? 'N' : 'S')
+                            );
+
             result = result.replace(/DDD/ , parts.degrees                   );
-            result = result.replace(/dddd/, append(parts.degreesDecimal,4)  );
-            result = result.replace(/MM/  , trim(parts.minutes, 2)          );
+            result = result.replace(/dddd/, append(parts.degreesDecimal, 4) );
+            result = result.replace(/MM/  , trim(parts.minutes,          2) );
             result = result.replace(/mmm/ , append(parts.minutesDecimal, 3) );
-            result = result.replace(/SS/  , trim(parts.seconds, 2)          );
-            result = result.replace(/s/   , trim(parts.secondsDecimal, 1)   );
+            result = result.replace(/SS/  , trim(parts.seconds,          2) );
+            result = result.replace(/s/   , trim(parts.secondsDecimal,   1) );
+
+            if (trunc){
+                //Remove delimiters not followed by a digit
+                result = result.replace( new RegExp('\\'+latLngFormat.options.delimitersDecimal + '(?![0-9])', 'g'), '');
+
+                /*
+                Remove sign for minute (') and seconds (") without pending digital
+                Using regExp result = result.replace( /(?<!\d)[\'\"]/g, ''); works but JavaScript do not support 'before': < so
+                a workaround is used
+                */
+                var i = 1;
+                while (i < result.length)
+                    if ( ((result.charAt(i) == '"') || (result.charAt(i) == "'")) &&
+                         !$.isNumeric(result.charAt(i-1))
+                       )
+                        result = result.slice(0,i) + result.slice(i+1);
+                    else
+                        i++;
+            }
+
             return result;
         },
         //format - Converts number value to a string, using this.displayMask or this.editMask
-        format   : function( useEditMask ){ return this._method( this._format, useEditMask ); },
+        format   : function( useEditMask ){ return this._method(    this._format, useEditMask ); },
         formatLat: function( useEditMask ){ return this._methodLat( this._format, useEditMask ); },
         formatLng: function( useEditMask ){ return this._methodLng( this._format, useEditMask ); },
+
+        //formatTrunc - Converts number value to a string, truncating any zero-values
+        formatTrunc   : function(){ return this._method(    this._format, false, true ); },
+        formatTruncLat: function(){ return this._methodLat( this._format, false, true ); },
+        formatTruncLng: function(){ return this._methodLng( this._format, false, true ); },
+
 
         //**********************************************************
         //_ value - Converts value (string masked as editMask) to decimal degrees.
@@ -168,7 +219,7 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
 
             if ((value === '') || !this._valid(latOrLng,  value))
                 return null;
-            
+
             var split = value.split(/\D/),
                 result = 0,
                 convertMaskIndex = 0,
@@ -228,10 +279,10 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
         convertLat: function( orgLatLngFormat ){ return this._methodLat( this._convert, orgLatLngFormat ); },
         convertLng: function( orgLatLngFormat ){ return this._methodLng( this._convert, orgLatLngFormat ); },
 
-        
+
     };//end of latLngFormat.fn = LatLngFormat.prototype = {
-    
-   
+
+
     /************************************
     Static methods
     ************************************/
@@ -239,7 +290,7 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
         //setFormat
         setFormat: function( formatId ){
             if (formatId !== null)
-              this.options.formatId = formatId; 
+              this.options.formatId = formatId;
 
             /*
             Create editMask,convertMask, regexp, placeholder in options based on options.formatId and numeral.js
@@ -280,8 +331,6 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
                 n_localeData = n && n.localeData ? n.localeData() : null,
                 n_delimiters_decimal = n_localeData && n_localeData.delimiters && n_localeData.delimiters.decimal ? n_localeData.delimiters.decimal : null;
 
-
-
             if (n_delimiters_decimal)
               dS = n_delimiters_decimal;
             else {
@@ -290,6 +339,8 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
                      S.indexOf(',') > -1 ? ',' :
                      '.';
             }
+
+            this.options.delimitersDecimal = dS;
 
             switch (this.options.formatId){
                 case LATLNGFORMAT_DMSS:
@@ -326,7 +377,7 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
                     break;
             }
             $.extend( this.options, newOptions );
-        
+
             return formatId;
         }
     }); //end of $.extend( latLngFormat, {
@@ -338,10 +389,10 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
     //Overwrite numeral.js method XX to update format with new decimal delimiters
     var n = window.numeral;
     if (n && n.locale){
-        n.locale = 
+        n.locale =
             function( locale ){
                 return function(){
-                    //Original function 
+                    //Original function
                     var result = locale.apply(this, arguments);
 
                     //Update format
@@ -353,5 +404,5 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
     }
 
 
-    
+
 }(jQuery, this, document));
