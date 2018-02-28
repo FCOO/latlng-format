@@ -77,12 +77,12 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
                 }
             });
         }
-        return new LatLngFormat( inputValid ? inputs : null );
+        return new LatLngFormat( inputValid ? inputs : [null,null] );
     };
 
     //Defalut options
     latLngFormat.options = {
-        degreeChar: '&#176;', //or '&deg;'
+        degreeChar: String.fromCharCode(176), //or '&#176;' '&deg;'
              //lat, lng
         min: [-90, -180],
         max: [ 90,  180]
@@ -104,8 +104,10 @@ latlng-format, a class to validate, format, and transform positions (eq. leaflet
         _methodLat: function (method, param1, param2) { return method.call( this, 0, this._getLat(), param1, param2 ); },
         _methodLng: function (method, param1, param2) { return method.call( this, 1, this._getLng(), param1, param2 ); },
 
+
         //**********************************************************
         //_valid - Return true if the value is a valid position
+
         _valid: function(latOrLng, value){
             if (typeof value == 'number')
                 return (value >= latLngFormat.options.min[latOrLng]) && (value <= latLngFormat.options.max[latOrLng]);
