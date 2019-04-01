@@ -765,7 +765,7 @@ using a ES5-version of https://github.com/proj4js/mgrs
                 displayMask : "",
                 editMask    : "",
                 regexp      : regexp,
-                placeholder : "48N CD 12345 12345",
+                placeholder : "48NCD 12345 12345",
            };
         },
 
@@ -781,8 +781,7 @@ using a ES5-version of https://github.com/proj4js/mgrs
                 seasting  = "00000" + utm.easting,
                 snorthing = "00000" + utm.northing,
                 result = [
-                    (zoneNumber.length < 2  ? '0'+zoneNumber : zoneNumber) + utm.zoneLetter,
-                    get100kID(utm.easting, utm.northing, utm.zoneNumber),
+                    (zoneNumber.length < 2  ? '0'+zoneNumber : zoneNumber) + utm.zoneLetter + get100kID(utm.easting, utm.northing, utm.zoneNumber),
                     seasting.substr(seasting.length - 5, accuracy),
                     snorthing.substr(snorthing.length - 5, accuracy)
                 ];
