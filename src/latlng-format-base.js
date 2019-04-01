@@ -1,5 +1,5 @@
 /****************************************************************************
-latlng-format, a class to validate, format, and transform positions (eq. leaflet LatLng)
+latlng-format-base, a class to validate, format, and transform positions (eq. leaflet LatLng)
 
     (c) 2015, FCOO
 
