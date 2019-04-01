@@ -8,60 +8,155 @@
 
 	<meta name='copyright' content='FCOO'>
 	<meta name='owner' content='FCOO'>
-
+    <style>
+        h4 { font-size: 120%; margin: 5px; }
+        p { margin: 5px; }
+    </style>
 </head>
 
 <body>
 	<script src="bower_components.js"></script>
 	<script src="../src/latlng-format.js"></script>
+	<script src="../src/latlng-format-degrees.js"></script>
+	<script src="../src/latlng-format-proj4js-mgrs.js"></script>
+	<script src="../src/latlng-format-nac.js"></script>
+	<script src="../src/latlng-format-utm.js"></script>
 	<script>
 
         function header( text ){
-            $('<h4>').text( text ).appendTo( $('body') );
+            $('<h4>').html( text ).appendTo( $('body') );
         }
 
-        function display(functionStr){
+        function display(functionStr, expected){
+            function asString( obj ){
+                var result = obj;
+                if (typeof obj == 'string')
+			        result = '"' + result + '"';
+                if (typeof obj == 'object'){
+                    //Output is a array
+                    result = '[';
+                    for (var i=0; i<obj.length; i++ ){
+                        if (i)
+                            result += ', ';
+                        if (typeof obj[i] == 'string')
+                            result += '"';
+                        result += obj[i];
+                        if (typeof obj[i] == 'string')
+                            result += '"';
+                    }
+                    result += ']';
+                };
+                return result;
+            }
+
+
 			var func = new Function('return '+functionStr),
 				funcReturn = func(),
-				funcReturnAsString = funcReturn;
-			if (typeof funcReturn == 'string')
-			  funcReturnAsString = '"' + funcReturnAsString + '"';
-            if (typeof funcReturn == 'object'){
-                //Output is a array
-                funcReturnAsString = '[';
-                for (var i=0; i<funcReturn.length; i++ ){
-                    if (i)
-                        funcReturnAsString += ', ';
+				funcReturnAsString = asString( funcReturn );
 
-                    if (typeof funcReturn[i] == 'string')
-                        funcReturnAsString += '"';
-                    funcReturnAsString += funcReturn[i];
-                    if (typeof funcReturn[i] == 'string')
-                        funcReturnAsString += '"';
-                }
-                funcReturnAsString += ']';
-            };
+            var asExpected = '';
+            if (expected !== undefined){
+                    asExpected = asString( expected );
+                    if (asExpected === funcReturnAsString)
+                        asExpected = '//Ok';
+                    else
+                        asExpected = '<span style="color:red">//ERROR Expected:'+asExpected + '</span>';
+            }
 
-
-            $('body').append('<p><code>'+functionStr+' => ' + funcReturnAsString + '</code></p>');
+            $('body').append('<p><code>'+functionStr+' => ' + funcReturnAsString + (asExpected ? '&nbsp;'+ asExpected : '') + '</code></p>');
         }
 
 
-        display('latLngFormat(160).validLng()');
+    var LATLNGFORMAT_DMSS = window.latLngFormat.LATLNGFORMAT_DMSS, //Degrees Minutes Seconds Decimal Seconds: N65d30'15.3"  d='degree sign'
+        LATLNGFORMAT_DMM  = window.latLngFormat.LATLNGFORMAT_DMM,  //Degrees Decimal minutes                : N65d30.258'
+        LATLNGFORMAT_DD   = window.latLngFormat.LATLNGFORMAT_DD,   //Decimal degrees                        : N41.1234d
 
-        display("latLngFormat('55°36', '12°20').value();");
-        display("latLngFormat('55 36', '12 20').value();");
-        display("latLngFormat('55 12 345', '12 4321').value()");
-        display("latLngFormat('55 12 3,4', '12 43 21').value()");
+        LATLNGFORMAT_UTM  = window.latLngFormat.LATLNGFORMAT_UTM,  //UTM                                    : 29Q 286657 2492164
+        LATLNGFORMAT_MGRS = window.latLngFormat.LATLNGFORMAT_MGRS; //MGRS                                   :
 
-        display("latLngFormat('55.123', '12.4321').convert(2)");
+        LATLNGFORMAT_NAC = window.latLngFormat.LATLNGFORMAT_NAC; //NAC                                   : MANGLER
+
+        LATLNGFORMAT_FIRST = window.latLngFormat.LATLNGFORMAT_FIRST;
+        LATLNGFORMAT_LAST = window.latLngFormat.LATLNGFORMAT_LAST;
 
 
-        display('latLngFormat.setFormat(0)');
+        for (var formatId=LATLNGFORMAT_FIRST; formatId<=LATLNGFORMAT_LAST; formatId++ ){
+            var text = '';
+            switch (formatId){
+                case LATLNGFORMAT_DMSS: text = 'LATLNGFORMAT_DMSS'; break;
+                case LATLNGFORMAT_DMM : text = 'LATLNGFORMAT_DMM';  break;
+                case LATLNGFORMAT_DD  : text = 'LATLNGFORMAT_DD';   break;
+                case LATLNGFORMAT_UTM : text = 'LATLNGFORMAT_UTM';  break;
+                case LATLNGFORMAT_MGRS: text = 'LATLNGFORMAT_MGRS'; break;
+                case LATLNGFORMAT_NAC : text = 'LATLNGFORMAT_NAC';  break;
+            }
+
+
+            header('<br><br>******'+formatId+':'+text+'******');
+            display('latLngFormat.setFormat('+formatId+')');
+
+            header('* valid *');
+            display('latLngFormat(85).valid()');
+            display('latLngFormat(85).valid(true)');
+            display('latLngFormat(55.6, 12.333333333333334).valid(true)', [true,true]);
+
+            header('* format *');
+            display("latLngFormat(955.123, 12.4321).format()", false);
+            display("latLngFormat(55.123, 12.4321).format()");
+            display("latLngFormat(55.123, -169.3734).format()");
+
+            header('* formatTrunc *');
+            display("latLngFormat(55.123, 12.4321).formatTrunc()");
+
+            header('* value *');
+            function getExpected(id, value){ return formatId == id ? value || [55.123, 12.4321] : false; }
+            display("latLngFormat('55°07 22.7\"N', '12°25 55.5\"E').value();",  getExpected(0));
+            display("latLngFormat('55 07 22.7', '12 25 55.5').value();",        getExpected(0));
+
+            display("latLngFormat('55°07.380N', '12°25.926E').value();",    getExpected(1));
+            display("latLngFormat('55 7.38',  '12 25.926').value();",       getExpected(1));
+
+            display("latLngFormat('55.123°N', '12.4321°E').value();", getExpected(2));
+            display("latLngFormat('55.123',   '12.4321').value();",   getExpected(2));
+
+            display("latLngFormat('   03     N     364543     6107978  ').value();", getExpected(3, [55.1, -167.123]));
+            display("latLngFormat('3     N     364543     6107978  ').value();",     getExpected(3, [55.1, -167.123]));
+            display("latLngFormat('33U 0336257 6111490').value();",                  getExpected(3));
+
+            display("latLngFormat('33I 0336257 6111490').value();", false);
+
+            display("latLngFormat('  33U   UB   36257   11489  ').value();", getExpected(4));
+            display("latLngFormat('33U UB 36257 11489').value();",           getExpected(4));
+
+            display("latLngFormat('J12D6Q S5LFGZ').value();",            getExpected(5));
+            display("latLngFormat('    0VJZTG    S5LFGZ    ').value();", getExpected(5, [55.123, -169.3734]));
+
+            header('* convertTo *');
+//            var theFormat = latLngFormat(55.123, 12.4321).format({asArray: window.latLngFormat.options.twoValueMode}),
+            var theFormat = latLngFormat(55.123, -169.3734).format({asArray: window.latLngFormat.options.twoValueMode}),
+                expected = [
+                    "55°07'22.7\"N 169°22'24.2\"W", //"55°07'22.7\"N 12°25'55.5\"E",
+                    "55°07.380'N 169°22.404'W", //"55°07.380'N 12°25.926'E",
+                    "55.1230°N 169.3734°W", //"55.1230°N 12.4321°E",
+                    "02U 0603728 6109687", //"33U 0336257 6111490",
+                    "02U PG 03727 09686",
+                    "0VJZTG S5LFGZ"
+                ];
+
+            display('theFormat');
+            for (var newFormatId=LATLNGFORMAT_FIRST; newFormatId<=LATLNGFORMAT_LAST; newFormatId++ )
+                if (newFormatId != formatId)
+                    display('latLngFormat(theFormat).convertTo('+newFormatId+')', expected[newFormatId]);
+
+            for (var newFormatId=LATLNGFORMAT_FIRST; newFormatId<=LATLNGFORMAT_LAST; newFormatId++ )
+                if (newFormatId != formatId)
+                    display('latLngFormat(955.123, 12.4321).convertTo('+newFormatId+')', false);
+        }
+
+        header('<br>** LANG **');
+        display('latLngFormat.setFormat(LATLNGFORMAT_DMSS)');
+
         display("latLngFormat(55.123, 12.4321).format()");
-        display('latLngFormat.setFormat(2)');
-        display("latLngFormat(55.123, 12.4321).format()");
-
 
         numeral.register('locale', 'da-dk', {
             delimiters   : { thousands: '.', decimal: ',' },
@@ -71,21 +166,8 @@
         });
         display("numeral.locale('da-dk')");
 
-        display('latLngFormat.setFormat(0)');
-        display("latLngFormat(55.123, 12.4321).format()");
-        display('latLngFormat.setFormat(2)');
         display("latLngFormat(55.123, 12.4321).format()");
 
-        header( '************ TRUNC ************' );
-        display('latLngFormat.setFormat(0)');
-        display("latLngFormat(55.5, 12.4).formatTrunc()");
-        display("latLngFormat(55, 12).formatTrunc()");
-        display('latLngFormat.setFormat(1)');
-        display("latLngFormat(55.5, 12.4).formatTrunc()");
-        display("latLngFormat(55, 12).formatTrunc()");
-        display('latLngFormat.setFormat(2)');
-        display("latLngFormat(55.5, 12.4).formatTrunc()");
-        display("latLngFormat(55, 12).formatTrunc()");
 
     </script>
 </body>

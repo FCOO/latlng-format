@@ -1,96 +1,78 @@
 # latlng-format
 A class to validate, format, and transform positions (e.g. leaflet LatLng)
 
-Can handle tree different formats:
+Can handle five different formats:
 
 1. Degrees Minutes Seconds Decimal Seconds: `N65°30'15.3"`
 2. Degrees Decimal minutes: `N65°30.258'`
 3. Decimal degrees: `N65.5043°`
+4. UTM: `29Q 286657 2492164`
+5. MGRS: `MANGLER`
  
 
 ## Installation
 ### bower
 `bower install https://github.com/fcoo/latlng-format.git --save`
 
-## Create
+## Demo
+http://FCOO.github.io/latlng-format/demo/ 
 
-    var myLatLngFormat = latLngFormat( 12.345 );
-    myLatLngFormat.formatLng(); //12°20'42.0" = {string}
+## Usage
 
-    var myLatLngFormat = latLngFormat( 55.6, 12.345 );
-    myLatLngFormat.format(); //[ 55°36'0.0", 12°20'42.0" ] = {string[]}
+### `latLngFormat.setFormat( formatId )`
 
-    var myLatLngFormat = latLngFormat( '55°36\'0.0"', '12°20\'42.0"' );
-    myLatLngFormat.value(); //[ 55.6, 12.345 ] = {number[]}
+Sets the format used by `latLngFormat` where `formatId` is a number between 0-5, or use one of the following const 
 
-```var myLatLngFormat = new LatLngFormat( formatId )```
+    latLngFormat.LATLNGFORMAT_DMSS = 0; //Degrees Minutes Seconds Decimal Seconds: N65d30'15.3"  d='degree sign'
+    latLngFormat.LATLNGFORMAT_DMM  = 1, //Degrees Decimal minutes                : N65d30.258'
+    latLngFormat.LATLNGFORMAT_DD   = 2; //Decimal degrees                        : N41.1234d
 
-### Validate, format and convert
-All validation, format, and covert methods comes in tree versions:
-
-    latLngFormat.METHOD    = function( {(number|string)[]} ) return {(number|string|boolean)[]}
-	latLngFormat.METHODLat = function( {(number|string)} )   return {(number|string|boolean)}
-	latLngFormat.METHODLng = function( {(number|string)} )   return {(number|string|boolean)}
-
-#### valid
-Input: A position as formatted string. Eq. `"N41.1234°"` 	 
-Output: `{boolean}` or `{boolean[]}` if `input` is a valid position
-
-    latLngFormat.valid()
-	latLngFormat.validLat()
-	latLngFormat.validLng()
-
-#### format
-Converts signed decimal degrees `({number})` to a string
-Input: A position as decimal degrees (`{number[]}` or `{number}`).
-Output: The position as formatted string. Eq. `"N41°30'00""` (`{string[]}` or `{string}`).
-
-	latLngFormat.format()
-	latLngFormat.formatLat()
-	latLngFormat.formatLng()
-
-#### formatTrunc
-Converts signed decimal degrees `({number})` to a string AND trunctate it
-Input: A position as decimal degrees (`{number[]}` or `{number}`).
-Output: The position as formatted string. Eq. `"N41°30'"` (`{string[]}` or `{string}`).
-
-	latLngFormat.formatTrunc()
-	latLngFormat.formatTruncLat()
-	latLngFormat.formatTruncLng()
-
-#### value
-Converts value = string masked as editMask to decimal degrees.
-Input: A position as formatted string. Eq. `"N41.1234°"`
-Output: Decimal degrees (`{number[]}` or `{number}`).
-
-	latLngFormat.value()
-	latLngFormat.valueLat()
-	latLngFormat.valueLng()
-
-#### convert
-Converts value = string masked as editMask between two different formats. NOTE: Used to edit positions
-Input: `orgFormatId` = id of the original format
-Output: The position as formatted string in the current format
-
-    latLngFormat.convert( orgFormatId )
-	latLngFormat.convertLat( orgFormatId )
-	latLngFormat.convertLng( orgFormatId )
-
-
-## Settings
-
-    latLngFormat.setFormat( formatId )
-
-Sets the format used by `latLngFormat` where `formatId`is a number between 0-2, or use one of the following const 
-
-| value | const | Description | Example |
-| :--: | :--: | --- | :--: |
-| `0` | `latLngFormat.LATLNGFORMAT_DMSS` | Degrees Minutes Seconds Decimal Seconds| `N65°30'15.3"` |
-| `1` | `latLngFormat.LATLNGFORMAT_DMM` | Degrees Decimal minutes| `N65°30.258'` |
-| `2` | `latLngFormat.LATLNGFORMAT_DD` | Decimal degrees| `N65.5043°` |
+    latLngFormat.LATLNGFORMAT_UTM  = 3; //UTM                                    : 29Q 286657 2492164
+    latLngFormat.LATLNGFORMAT_MGRS = 4; //MGRS                                   : 4QFJ1234567890
+    latLngFormat.LATLNGFORMAT_NAC  = 5; //NAC                                    : HBV6R RG77T
 
 NOTE: The decimal delimiter used is set in [Numeral.js](http://numeraljs.com/) using [locale](http://numeraljs.com/#locales)
 
+### Create `latLngFormat`
+
+    var myLatLngFormat = latLngFormat( <input> );
+
+The `<input>` can be one of the following
+
+    Number           : latLngFormat(85)
+    [Number, Number] : latLngFormat(55.123, 12.4321)
+    String           : latLngFormat('33I 0336257 6111490')
+    [String, String] : latLngFormat('55°07.380N', '12°25.926E')
+
+
+### `latLngFormat(...).valid(asArray: Boolean);`
+
+    latLngFormat(...).valid() => true or false
+    latLngFormat(...).valid(true) => [true or false, ture or false]
+
+### `latLngFormat(...).format(options);`
+
+Return the position as a `String` or `String[]`
+
+    options:
+        asArray  : false,
+        preText  : '',
+        separator: ' ',
+        postText : '',
+        truncate : false   
+
+
+### `latLngFormat(...).formatTrunc(options);`
+
+As `latLngFormat(...).format(options);` but return a truncated string
+
+### `latLngFormat(...).value();`
+
+Convert and return a valid position as `[lat:Number, lng:Number]`
+Return `false` if the position is invalid
+
+### `latLngFormat(...).convertTo(newFormatId);`
+Convert the position to `newFormatId` and return `.value()`
 
 ## Copyright and License
 This plugin is licensed under the [MIT license](https://github.com/fcoo/latlng-format/LICENSE).

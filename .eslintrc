@@ -20,6 +20,7 @@
         "no-console"              : ["error", { "allow": ["warn", "error"] }],
         "no-mixed-spaces-and-tabs": "warn",
         "semi"                    : "warn",
-        "no-extra-semi"           : "warn"
+        "no-extra-semi"           : "warn",
+        "no-extra-boolean-cast"   : "off"
     }
 }
