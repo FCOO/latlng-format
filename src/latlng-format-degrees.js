@@ -100,26 +100,29 @@ Set methodes and options for format degrees, minutes, seconds
         format
         ************************************/
         format: function(value, options, latLngFormat){
-
-            function trim(value, lgd){
+            function trim(value, lgd, inclZero){
                 var result = ''+value;
                 if (options.truncate){
                     if (value == 0)
-                        result = '';
+                        result = inclZero ? '0' : '';
                 }
                 else
                     while (result.length < lgd)
                         result = '0'+result;
                 return result;
             }
-            function append(value, lgd){
+            function appendDecimals(value, lgd){
                 var result = ''+value;
+                //Convert from "100" to "0100" (length: 4)
+                while (result.length < lgd)
+                    result = '0'+result;
+
+                //Remove tailing zero
                 if (options.truncate)
                     result = result.replace( /0*$/g, '');
-                else
-                    while (result.length < lgd)
-                        result = result+'0';
-                return result;
+
+                //Prepend decimal delimiters
+                return result ? options.delimitersDecimal+result : result;
             }
 
             var parts = latLngFormat.split(value),
@@ -127,18 +130,18 @@ Set methodes and options for format degrees, minutes, seconds
                             .replace('H', options.latOrLng ?
                                             (parts.hemisphere == 1 ? 'E' : 'W') :
                                             (parts.hemisphere == 1 ? 'N' : 'S')
-                            );
+                            )
+                            .replace( options.delimitersDecimal, ''); //delimitersDecimal is added in appendDecimals if not truncate and decimal > 0
+
             result = result.replace(/DDD/ , parts.degrees                   );
-            result = result.replace(/dddd/, append(parts.degreesDecimal, 4) );
-            result = result.replace(/MM/  , trim(parts.minutes,          2) );
-            result = result.replace(/mmm/ , append(parts.minutesDecimal, 3) );
-            result = result.replace(/SS/  , trim(parts.seconds,          2) );
-            result = result.replace(/s/   , trim(parts.secondsDecimal,   1) );
+            result = result.replace(/dddd/, appendDecimals(parts.degreesDecimal, 4) );
+            result = result.replace(/MM/  , trim(parts.minutes, 2, parts.minutesDecimal) );
+            result = result.replace(/mmm/ , appendDecimals(parts.minutesDecimal, 3) );
+            result = result.replace(/SS/  , trim(parts.seconds, 2, parts.secondsDecimal) );
+            result = result.replace(/s/   , appendDecimals(parts.secondsDecimal,   1) );
+
 
             if (options.truncate){
-                //Remove delimiters not followed by a digit
-                result = result.replace( new RegExp('\\'+options.delimitersDecimal + '(?![0-9])', 'g'), '');
-
                 /*
                 Remove sign for minute (') and seconds (") without pending digital
                 Using regExp result = result.replace( /(?<!\d)[\'\"]/g, ''); works but JavaScript do not support 'before': < so

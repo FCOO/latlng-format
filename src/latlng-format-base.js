@@ -141,16 +141,19 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
             var result = {};
             result.hemisphere = position >= 0 ? +1 : -1;
             position = Math.abs(position);
-            result.degrees = Math.floor(position);
-            result.degreesDecimal = Math.min(9999, Math.round((position - result.degrees)*10000) );
 
-            position = position*60 % 60; //Minutes
+            var positionDegrees = window.precision(position, 4);
+            result.degrees = Math.floor(positionDegrees);
+            result.degreesDecimal = Math.min(9999, Math.round((positionDegrees - result.degrees)*10000) );
+
+            position = window.precision(position*60 % 60, 3); //Minutes
             result.minutes = Math.floor(position);
             result.minutesDecimal = Math.min( 999, Math.round((position - result.minutes)*1000) );
 
-            position = position*60 % 60; //seconds
+            position = window.precision(position*60 % 60, 1); //seconds
             result.seconds = Math.floor(position);
-            result.secondsDecimal = Math.min( 9, Math.floor/*round*/((position - result.seconds)*10) );
+            result.secondsDecimal = Math.min( 9, Math.round((position - result.seconds)*10) );
+
 
             return result;
         }

@@ -95,6 +95,21 @@
             header('<br><br>******'+formatId+':'+text+'******');
             display('latLngFormat.setFormat('+formatId+')');
 
+/*
+header('* TEST');
+display("latLngFormat(55.123, 0).format()");
+display("latLngFormat(55.123, 0).formatTrunc()");
+
+display("latLngFormat(55.01, 0).format()");
+display("latLngFormat(55.01, 0).formatTrunc()");
+
+display("latLngFormat(55.001, 0).format()");
+display("latLngFormat(55.001, 0).formatTrunc()");
+
+display("latLngFormat(55+2/3600, 0).format()");
+display("latLngFormat(55+2/3600, 0).formatTrunc()");
+*/
+
             header('* valid *');
             display('latLngFormat(85).valid()');
             display('latLngFormat(85).valid(true)');
@@ -104,9 +119,19 @@
             display("latLngFormat(955.123, 12.4321).format()", false);
             display("latLngFormat(55.123, 12.4321).format()");
             display("latLngFormat(55.123, -169.3734).format()");
+            display("latLngFormat(55.01, 55.01).format()");
+            display("latLngFormat(55.001, 0).format()");
+            display("latLngFormat(55+2/3600, 0).format()");
 
             header('* formatTrunc *');
+            display("latLngFormat(955.123, 12.4321).formatTrunc()", false);
             display("latLngFormat(55.123, 12.4321).formatTrunc()");
+            display("latLngFormat(55.123, -169.3734).format()");
+
+            display("latLngFormat(55.01, 55.01).formatTrunc()");
+            display("latLngFormat(55.001, 0).formatTrunc()");
+            display("latLngFormat(55+2/3600, 0).formatTrunc()");
+
 
             header('* value *');
             function getExpected(id, value){ return formatId == id ? value || [55.123, 12.4321] : false; }
