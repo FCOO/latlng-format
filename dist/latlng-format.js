@@ -143,7 +143,7 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
 
             if (!dontCallOnChange && (oldFormatId != formatId))
                 $.each( this.onChangeList, function( index, rec ){
-                    (rec.context ? $.proxy(rec.metod, rec.context) : rec.method)(formatId, oldFormatId);
+                    (rec.context ? $.proxy(rec.method, rec.context) : rec.method)(formatId, oldFormatId);
                 });
 
             return formatId;
