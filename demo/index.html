@@ -22,7 +22,6 @@
 	<script src="../src/latlng-format-nac.js"></script>
 	<script src="../src/latlng-format-utm.js"></script>
 	<script>
-
         function header( text ){
             $('<h4>').html( text ).appendTo( $('body') );
         }
@@ -79,6 +78,10 @@
         LATLNGFORMAT_FIRST = window.latLngFormat.LATLNGFORMAT_FIRST;
         LATLNGFORMAT_LAST = window.latLngFormat.LATLNGFORMAT_LAST;
 
+
+        window.latLngFormat.onChange( function( formatId, oldFormatId ){
+            console.log('Change from "' + oldFormatId + '" to "' +  formatId + '"');
+        });
 
         for (var formatId=LATLNGFORMAT_FIRST; formatId<=LATLNGFORMAT_LAST; formatId++ ){
             var text = '';

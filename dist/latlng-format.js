@@ -60,6 +60,7 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
     }
     */
     latLngFormat.formatList = {};
+    latLngFormat.onChangeList = [];
 
 
     /************************************
@@ -85,9 +86,21 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
         },
 
         /************************************
+        onChange( function( newFormatId, oldFormatId )[, context ])
+        Adding a function to be called when the format is changed
+        ************************************/
+        onChange: function( func, context ){
+            this.onChangeList.push( {
+                context: context,
+                method: func
+            });
+        },
+
+        /************************************
         setFormat
         ************************************/
-        setFormat: function( formatId ){
+        setFormat: function( formatId, dontCallOnChange ){
+            var oldFormatId = this.options.formatId;
             if (formatId !== undefined)
                 this.options.formatId = formatId;
 
@@ -128,9 +141,21 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
                 $.extend( this.options, newOptions );
             }
 
+            if (!dontCallOnChange && (oldFormatId != formatId))
+                $.each( this.onChangeList, function( index, rec ){
+                    (rec.context ? $.proxy(rec.metod, rec.context) : rec.method)(formatId, oldFormatId);
+                });
+
             return formatId;
         }, //end of setFormat
 
+
+        /************************************
+        setTempFormat
+        ************************************/
+        setTempFormat: function( formatId ){
+            return this.setFormat( formatId, true );
+        },
 
         /************************************
         split
@@ -172,7 +197,7 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
                 var result = locale.apply(this, arguments);
 
                 //Update format
-                window.latLngFormat.setFormat();
+                window.latLngFormat.setTempFormat();
 
                 return result;
             };
@@ -339,10 +364,10 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
                 result   = this.value();
 
             if (result){
-                latLngFormat.setFormat( newFormatId );
+                latLngFormat.setTempFormat( newFormatId );
                 var newLatLngFormat = latLngFormat( result );
                 result = newLatLngFormat.valid() ? newLatLngFormat.format( options ) : false;
-                latLngFormat.setFormat( formatId );
+                latLngFormat.setTempFormat( formatId );
             }
 
             return result;

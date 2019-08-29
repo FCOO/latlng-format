@@ -33,6 +33,11 @@ Sets the format used by `latLngFormat` where `formatId` is a number between 0-5,
 
 NOTE: The decimal delimiter used is set in [Numeral.js](http://numeraljs.com/) using [locale](http://numeraljs.com/#locales)
 
+### `latLngFormat.onChange( method[, context])`
+Adds a method (and context) to be called when a new format is set using `latLngFormat.setFormat( formatId )`
+
+`method = function( formatId, oldFormatId )`
+
 ### Create `latLngFormat`
 
     var myLatLngFormat = latLngFormat( <input> );
