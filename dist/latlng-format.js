@@ -100,7 +100,8 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
         setFormat
         ************************************/
         setFormat: function( formatId, dontCallOnChange ){
-            var oldFormatId = this.options.formatId;
+            var oldFormatId = this.options.formatId,
+                oldDecimal = this.options.delimitersDecimal;
             if (formatId !== undefined)
                 this.options.formatId = formatId;
 
@@ -141,7 +142,7 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
                 $.extend( this.options, newOptions );
             }
 
-            if (!dontCallOnChange && (oldFormatId != formatId))
+            if (!dontCallOnChange && ((oldFormatId != formatId) || (oldDecimal != dS)))
                 $.each( this.onChangeList, function( index, rec ){
                     (rec.context ? $.proxy(rec.method, rec.context) : rec.method)(formatId, oldFormatId);
                 });
