@@ -198,7 +198,7 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
                 var result = locale.apply(this, arguments);
 
                 //Update format
-                window.latLngFormat.setTempFormat();
+                window.latLngFormat.setFormat();
 
                 return result;
             };
