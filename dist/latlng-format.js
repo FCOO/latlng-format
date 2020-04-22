@@ -553,9 +553,16 @@ Set methodes and options for format degrees, minutes, seconds
 
             value = value.toUpperCase().trim();
 
-            //Convert N or E to +1 and S or W to -1
+            //If it is lat and it contains "W" or "E" or it is long and it contains "N" or "S" => invalid format
+            if  (
+                    ( (options.latOrLng == 0) && ( (value.indexOf('W') > -1) || (value.indexOf('E') > -1) ) ) ||
+                    ( (options.latOrLng == 1) && ( (value.indexOf('N') > -1) || (value.indexOf('S') > -1) ) )
+                )
+                return false;
+
+            //Convert "N" or "E" to +1 and "-", "S" or "W" to -1
             var sign = 1;
-            if ( (value.indexOf('S') > -1) || (value.indexOf('W') > -1) )
+            if ( (value.indexOf('S') > -1) || (value.indexOf('W') > -1) || (value.indexOf('-') > -1) )
                 sign = -1;
 
             //Remove all no-digital charts
