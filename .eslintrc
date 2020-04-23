@@ -25,6 +25,7 @@
         "no-extra-semi"             : "warn",
         "no-extra-boolean-cast"     : "off",
         "no-shadow-restricted-names": "off",
-        "no-prototype-builtins"     : "off"
+        "no-prototype-builtins"     : "off",
+        "no-useless-escape"         : "off"
     }
 }

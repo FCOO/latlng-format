@@ -566,8 +566,17 @@ Set methodes and options for format degrees, minutes, seconds
             if ( (value.indexOf('S') > -1) || (value.indexOf('W') > -1) || (value.indexOf('-') > -1) )
                 sign = -1;
 
-            //Remove all no-digital charts
-            value = value.replace(/\D+/g, ' ');
+            //Convert all "," to "." and count the number of "."
+            value = value.replace(/\,/g, '.');
+            var dots = (value.match(/\./g) || []).length;
+            if (dots >= 2)
+                return false;
+
+            //Remove all no-digital charts except "."
+            value = value.split('.');
+            $.each(value, function(index, str){ value[index] = str.replace(/\D+/g, ' '); });
+            value = value.join('.');
+
             if ((value === '') || !this._valid(value, options))
                 return false;
 
