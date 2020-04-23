@@ -349,12 +349,13 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
             if ( $.isArray(result) && ((result[0] === false) || (result[1] === false)) )
                 result = false;
 
+/* REMOVED
             //Round or truncate
             if (result) {
                 result[0] = window.precision(result[0], 4);
                 result[1] = window.precision(result[1], 4);
             }
-
+*/
             return result;
         },
 
