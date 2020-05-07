@@ -342,20 +342,18 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
         },
 
         //value - Converts value (string masked as editMask) to decimal degrees.
-        value: function(){
+        value: function(options){
             var result = this._valueMethod( this._value );
 
             //Check if both lat and lng are not false
             if ( $.isArray(result) && ((result[0] === false) || (result[1] === false)) )
                 result = false;
 
-/* REMOVED
             //Round or truncate
-            if (result) {
-                result[0] = window.precision(result[0], 4);
-                result[1] = window.precision(result[1], 4);
+            if (result && options && $.isNumeric(options.precision)) {
+                result[0] = window.precision(result[0], options.precision);
+                result[1] = window.precision(result[1], options.precision);
             }
-*/
             return result;
         },
 
@@ -363,7 +361,7 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
         //convertTo - If value is valid => convert it to newFormatId format and return it as text-string, else return false
         convertTo: function( newFormatId, options ){
             var formatId = latLngFormat.options.formatId,
-                result   = this.value();
+                result   = this.value(options);
 
             if (result){
                 latLngFormat.setTempFormat( newFormatId );

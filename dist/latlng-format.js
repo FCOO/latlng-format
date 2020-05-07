@@ -342,20 +342,18 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
         },
 
         //value - Converts value (string masked as editMask) to decimal degrees.
-        value: function(){
+        value: function(options){
             var result = this._valueMethod( this._value );
 
             //Check if both lat and lng are not false
             if ( $.isArray(result) && ((result[0] === false) || (result[1] === false)) )
                 result = false;
 
-/* REMOVED
             //Round or truncate
-            if (result) {
-                result[0] = window.precision(result[0], 4);
-                result[1] = window.precision(result[1], 4);
+            if (result && options && $.isNumeric(options.precision)) {
+                result[0] = window.precision(result[0], options.precision);
+                result[1] = window.precision(result[1], options.precision);
             }
-*/
             return result;
         },
 
@@ -363,7 +361,7 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
         //convertTo - If value is valid => convert it to newFormatId format and return it as text-string, else return false
         convertTo: function( newFormatId, options ){
             var formatId = latLngFormat.options.formatId,
-                result   = this.value();
+                result   = this.value(options);
 
             if (result){
                 latLngFormat.setTempFormat( newFormatId );
@@ -406,7 +404,7 @@ Set methodes and options for format degrees, minutes, seconds
             Regular expressions for different type of position input
             The regexp are 'build' using regexp for the sub-parts:
                 H=Hemisphere        : [n,N,s,S]
-                DD=Degrees          : 0-9, 00-09, 10-89
+                DD=Degrees          : 0-9, 00-09, 10-89with leading zeros
                 dddd=Degrees decimal: 0-9999
                 MM=Minutes          : 0-9, 00-09, 10-59
                 SS=Seconds          : 0-59
@@ -414,15 +412,15 @@ Set methodes and options for format degrees, minutes, seconds
                 mmm=decimal min     : 0-999
             */
             var _regexp = {
-                anySpace      : '\\s*',
-                hemisphereLat : '([nNsS])?',    //H=Hemisphere  : [n,N,s,S] (optional,
-                hemisphereLong: '([eEwW])?',    //H=Hemisphere : [e,E,w,W] (optional,
+                    anySpace      : '\\s*',
+                    hemisphereLat : '([nNsS])?',    //H=Hemisphere  : [n,N,s,S] (optional,
+                    hemisphereLong: '([eEwW])?',    //H=Hemisphere : [e,E,w,W] (optional,
 
-                DD            : '((0?[0-9])|[1-8][0-9])',  //DD=Degrees 0-89        :    0-9, 00-09 or 10-89
-                DDD           : '((\\d?\\d)|1[0-7][0-9])', //DDD=Degrees 0-179    :    0-9, 00-99 or 100-179
+                    DD            : '0*((0?[0-9])|[1-8][0-9])',  //DD=Degrees 0-89      :    0-9, 00-09 or 10-89
+                    DDD           : '0*((\\d?\\d)|1[0-7][0-9])', //DDD=Degrees 0-179    :    0-9, 00-99 or 100-179
 
-                MM            : '\\s' + '((0?[0-9])|[1-5][0-9])', //MM=Minutes: 0-9, 00-09 or 10-59 (allways with a seperator in front)
-            };
+                    MM            : '\\s' + '((0?[0-9])|[1-5][0-9])', //MM=Minutes: 0-9, 00-09 or 10-59 (allways with a seperator in front)
+                };
             _regexp.SS        = _regexp.MM;
             _regexp.seperator = _regexp.anySpace + '[\\s\\.,]' + _regexp.anySpace; //seperator: blank, "." or ",". Allow any number of spac,
 

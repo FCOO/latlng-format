@@ -138,32 +138,35 @@ display("latLngFormat(55+2/3600, 0).formatTrunc()");
 
             header('* value *');
             function getExpected(id, value){ return formatId == id ? value || [55.123, 12.4321] : false; }
-            display("latLngFormat('55°07 22.7\"N', '12°25 55.5\"E').value();",  getExpected(0));
-            display("latLngFormat('55 07 22.7', '12 25 55.5').value();",        getExpected(0));
+            display("latLngFormat('0055°07 22.7\"N', '0012°25 55.5\"E').value({precision: 4});",  getExpected(0));
+            display("latLngFormat('55 07 22.7', '12 25 55.5').value({precision: 4});",        getExpected(0));
 
-            display("latLngFormat('55°07.380N', '12°25.926E').value();",    getExpected(1));
-            display("latLngFormat('55 7.38',  '12 25.926').value();",       getExpected(1));
+            display("latLngFormat('55°07.380N', '12°25.926E').value({precision: 4});",    getExpected(1));
+            display("latLngFormat('55 7.38',  '12 25.926').value({precision: 4});",       getExpected(1));
 
-            display("latLngFormat('55.123°N', '12.4321°E').value();", getExpected(2));
-            display("latLngFormat('55.123',   '12.4321').value();",   getExpected(2));
+            display("latLngFormat('N55°07.380', 'E12°25.926').value({precision: 4});",    getExpected(1))
+            display("latLngFormat('55 7.38',  '12 25.926').value({precision: 4});",       getExpected(1));
 
-            display("latLngFormat('   03     N     364543     6107978  ').value();", getExpected(3, [55.1, -167.123]));
-            display("latLngFormat('3     N     364543     6107978  ').value();",     getExpected(3, [55.1, -167.123]));
-            display("latLngFormat('33U 0336257 6111490').value();",                  getExpected(3));
+            display("latLngFormat('55.123°N', '12.4321°E').value({precision: 4});", getExpected(2));
+            display("latLngFormat('55.123',   '12.4321').value({precision: 4});",   getExpected(2));
 
-            display("latLngFormat('33I 0336257 6111490').value();", false);
+            display("latLngFormat('   03     N     364543     6107978  ').value({precision: 4});", getExpected(3, [55.1, -167.123]));
+            display("latLngFormat('3     N     364543     6107978  ').value({precision: 4});",     getExpected(3, [55.1, -167.123]));
+            display("latLngFormat('33U 0336257 6111490').value({precision: 4});",                  getExpected(3));
 
-            display("latLngFormat('  33U  UB   36257   11489  ').value();", getExpected(4));
-            display("latLngFormat('33U UB 36257 11489').value();",           getExpected(4));
+            display("latLngFormat('33I 0336257 6111490').value({precision: 4});", false);
 
-            display("latLngFormat('J12D6Q S5LFGZ').value();",            getExpected(5));
-            display("latLngFormat('    0VJZTG    S5LFGZ    ').value();", getExpected(5, [55.123, -169.3734]));
+            display("latLngFormat('  33U  UB   36257   11489  ').value({precision: 4});", getExpected(4));
+            display("latLngFormat('33U UB 36257 11489').value({precision: 4});",           getExpected(4));
+
+            display("latLngFormat('J12D6Q S5LFGZ').value({precision: 4});",            getExpected(5));
+            display("latLngFormat('    0VJZTG    S5LFGZ    ').value({precision: 4});", getExpected(5, [55.123, -169.3734]));
 
             header('* convertTo *');
 //            var theFormat = latLngFormat(55.123, 12.4321).format({asArray: window.latLngFormat.options.twoValueMode}),
             var theFormat = latLngFormat(55.123, -169.3734).format({asArray: window.latLngFormat.options.twoValueMode}),
                 expected = [
-                    "55°07'22.7\"N 169°22'24.2\"W", //"55°07'22.7\"N 12°25'55.5\"E",
+                    "55°07'22.8\"N 169°22'24.2\"W", //"55°07'22.8\"N 12°25'55.5\"E",
                     "55°07.380'N 169°22.404'W", //"55°07.380'N 12°25.926'E",
                     "55.1230°N 169.3734°W", //"55.1230°N 12.4321°E",
                     "02U 0603728 6109687", //"33U 0336257 6111490",
@@ -174,11 +177,11 @@ display("latLngFormat(55+2/3600, 0).formatTrunc()");
             display('theFormat');
             for (var newFormatId=LATLNGFORMAT_FIRST; newFormatId<=LATLNGFORMAT_LAST; newFormatId++ )
                 if (newFormatId != formatId)
-                    display('latLngFormat(theFormat).convertTo('+newFormatId+')', expected[newFormatId]);
+                    display('latLngFormat(theFormat).convertTo('+newFormatId+', {precision: 4})', expected[newFormatId]);
 
             for (var newFormatId=LATLNGFORMAT_FIRST; newFormatId<=LATLNGFORMAT_LAST; newFormatId++ )
                 if (newFormatId != formatId)
-                    display('latLngFormat(955.123, 12.4321).convertTo('+newFormatId+')', false);
+                    display('latLngFormat(955.123, 12.4321).convertTo('+newFormatId+', {precision: 4})', false);
         }
 
         header('<br>** LANG **');
