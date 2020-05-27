@@ -184,6 +184,16 @@ Set methodes and options for format degrees, minutes, seconds
                 )
                 return false;
 
+            //If it is lat and it contains BOTH "N" or "S" AND "-" or it is long and it contains BOTH "W" or "E" AND "-" => invalid format
+            if  (
+                    (
+                        ( (options.latOrLng == 0) && ( (value.indexOf('N') > -1) || (value.indexOf('S') > -1) ) ) ||
+                        ( (options.latOrLng == 1) && ( (value.indexOf('W') > -1) || (value.indexOf('E') > -1) ) )
+                    ) &&
+                    (value.indexOf('-') > -1)
+                )
+                return false;
+
             //Convert "N" or "E" to +1 and "-", "S" or "W" to -1
             var sign = 1;
             if ( (value.indexOf('S') > -1) || (value.indexOf('W') > -1) || (value.indexOf('-') > -1) )
