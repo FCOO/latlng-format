@@ -173,8 +173,8 @@ Set methodes and options for format degrees, minutes, seconds
 
             value = value.toUpperCase().trim();
 
-            //If it contains anything but space 0-9,."'NnSsEeWw minus-sign degree-sign => invalid format
-            if (value.replace(/(\s|\d|,|\.|N|n|S|s|W|w|E|e|\°|'|"|\-)/g, '').length)
+            //If it contains anything but space 0-9,."'NnSsEeWw minus-sign@beginning degree-sign => invalid format
+            if (value.replace(/(\s|\d|,|\.|N|n|S|s|W|w|E|e|\°|'|"|^\-)/g, '').length)
                 return false;
 
             //If it is lat and it contains "W" or "E" or it is long and it contains "N" or "S" => invalid format
