@@ -45,10 +45,10 @@ Set methodes and options for format degrees, minutes, seconds
             _regexp.SS        = _regexp.MM;
             _regexp.seperator = _regexp.anySpace + '[\\s\\.,]' + _regexp.anySpace; //seperator: blank, "." or ",". Allow any number of spac,
 
-            _regexp.dddd      = '(' + _regexp.seperator + '\\d{1,4}' + ')?'; //dddd=decimal degrees (0-9999) optional
+            _regexp.dddd      = '(' + _regexp.seperator + '\\d{1,}' + ')?'; //dddd=decimal degrees (0-9999) optional
 
-            _regexp.MMmmm     = '(' + _regexp.MM + '(' + _regexp.seperator + '\\d{1,3}' + ')?' + ')?';                           //MMmmm=Minutes and Decimal minutes = [MM[0-999]]
-            _regexp.MMSSs     = '(' + _regexp.MM + '(' + _regexp.SS + '(' + _regexp.seperator + '\\d{1,1}' + ')?' + ')?' + ')?'; //MMSSss= Minutes Second and Decimal Seconds = [MM[ SS[0-99]]]
+            _regexp.MMmmm     = '(' + _regexp.MM + '(' + _regexp.seperator + '\\d{1,}' + ')?' + ')?';                           //MMmmm=Minutes and Decimal minutes = [MM[0-999]]
+            _regexp.MMSSs     = '(' + _regexp.MM + '(' + _regexp.SS + '(' + _regexp.seperator + '\\d{1,}' + ')?' + ')?' + ')?'; //MMSSss= Minutes Second and Decimal Seconds = [MM[ SS[0-99]]]
 
             var dS     = window.latLngFormat.options.delimitersDecimal,
                 dC     = window.latLngFormat.options.degreeChar,
@@ -173,8 +173,8 @@ Set methodes and options for format degrees, minutes, seconds
 
             value = value.toUpperCase().trim();
 
-            //If it contains anything but space 0-9,."'NnSsEeWw degree-sign => invalid format
-            if (value.replace(/(\s|\d|,|\.|N|n|S|s|W|w|E|e|\°|'|")/g, '').length)
+            //If it contains anything but space 0-9,."'NnSsEeWw minus-sign degree-sign => invalid format
+            if (value.replace(/(\s|\d|,|\.|N|n|S|s|W|w|E|e|\°|'|"|\-)/g, '').length)
                 return false;
 
             //If it is lat and it contains "W" or "E" or it is long and it contains "N" or "S" => invalid format
