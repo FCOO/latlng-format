@@ -234,9 +234,39 @@ Set methodes and options for format degrees, minutes, seconds
                 }
             }
             return sign*result;
-        }
+        },
 
+        /**********************************************************
+        outputs - return a list of possible output-formats to be used in other applications etc.
+        **********************************************************/
+        outputs: function( latLng ){
+            var result = [];
+
+            if (!this.inputIsValid)
+                return result;
+
+            //Create two outputs: 1: As format 2: Without hemisphere, degree, minutes and second chars and with +/-
+            result.push( this.format() );
+
+            var format = this.format({asArray: true});
+            if (latLng[0] < 0) format[0] = '-'+format[0];
+            if (latLng[1] < 0) format[1] = '-'+format[1];
+
+            function trimPos(str){
+                str = str.replace(/\D/g, function(char){
+                    return (char=='-') || (char==',') || (char=='.') ? char : ' ';
+                });
+                str = str.trim();
+                return str;
+            }
+
+            result.push( trimPos(format[0])+' '+trimPos(format[1]) );
+
+            return result;
+        }
     }; //end of window.latLngFormat.formatList[...] =
+
+
 
     //Set LATLNGFORMAT_DMSS as default
     if (!window.latLngFormat.options.formatId)

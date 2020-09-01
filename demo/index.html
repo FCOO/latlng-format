@@ -188,6 +188,10 @@ display("latLngFormat(55+2/3600, 0).formatTrunc()");
             for (var newFormatId=LATLNGFORMAT_FIRST; newFormatId<=LATLNGFORMAT_LAST; newFormatId++ )
                 if (newFormatId != formatId)
                     display('latLngFormat(955.123, 12.4321).convertTo('+newFormatId+', {precision: 4})', false);
+
+            header('* outputs *');
+            display("latLngFormat(55.07, -12.25).outputs();");
+
         }
 
         header('<br>** LANG **');

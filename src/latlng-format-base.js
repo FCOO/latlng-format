@@ -358,7 +358,9 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
         },
 
 
+        /**********************************************************
         //convertTo - If value is valid => convert it to newFormatId format and return it as text-string, else return false
+        **********************************************************/
         convertTo: function( newFormatId, options ){
             var formatId = latLngFormat.options.formatId,
                 result   = this.value(options);
@@ -371,7 +373,21 @@ latlng-format-base, a class to validate, format, and transform positions (eq. le
             }
 
             return result;
-        }
+        },
+
+        /**********************************************************
+        outputs - return a list of possible output-formats to be used in other applications etc.
+        Default = [format()]
+        **********************************************************/
+        _outputs: function(){
+            return latLngFormat._callMethodFromFormatList( 'outputs', this, arguments );
+        },
+
+        outputs: function(){
+            return this._valueMethod( this._outputs, {twoValueMode: false} ) || (this.format() ? [this.format()] : []);
+        },
+
+
     };//end of latLngFormat.fn = LatLngFormat.prototype = {
 
 
