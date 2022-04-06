@@ -100,6 +100,7 @@ Set methodes and options for format degrees, minutes, seconds
         format
         ************************************/
         format: function(value, options, latLngFormat){
+
             function trim(value, lgd, inclZero){
                 var result = ''+value;
                 if (options.truncate){
@@ -156,7 +157,6 @@ Set methodes and options for format degrees, minutes, seconds
                     else
                         i++;
             }
-
             return result;
         },
 
@@ -165,10 +165,10 @@ Set methodes and options for format degrees, minutes, seconds
         Using convertMask to convert the different part of the text. Any space is ignored
         ************************************/
         value: function(value, options/*, latLngFormat*/){
-            //toDecimal - Convert a integer value v to a decimal. Eq    toDecimal(89)    = 0.89, toDecimal(9) = 0.9, toDecimal(1234)    = 0.1234
-            function toDecimal(v) {
-                var l = v.toString().length;
-                return v / Math.pow(10, l);
+            //toDecimal - Convert a integer-string s to a decimal.
+            //Eq    toDecimal("89")    = 0.89, toDecimal("9") = 0.9, toDecimal("0001")    = 0.0001
+            function toDecimal(s) {
+                return parseFloat('0.'+s);
             }
 
             value = value.toUpperCase().trim();
@@ -216,23 +216,27 @@ Set methodes and options for format degrees, minutes, seconds
             var split = value.split(/\D/),
                 result = 0,
                 convertMaskIndex = 0,
-                i, nextValue;
-            for (i=0; i<split.length; i++ ){
-                nextValue = parseInt(split[i]);
-                if (!isNaN(nextValue)){
+                valueStr, valueInt;
+
+            for (var i=0; i<split.length; i++ ){
+                valueStr = split[i];
+                valueInt = parseInt(valueStr);
+
+                if (!isNaN(valueInt)){
                     switch (options.convertMask[convertMaskIndex]){
-                        case 'DDD' : result = result + nextValue;                 break;
-                        case 'MM'  : result = result + nextValue/60;              break;
-                        case 'mmm' : result = result + toDecimal(nextValue)/60;   break;
-                        case 's'   : result = result + toDecimal(nextValue)/3600; break;
-                        case 'SS'  : result = result + nextValue/3600;            break;
-                        case 'dddd': result = result + toDecimal(nextValue);      break;
+                        case 'DDD' : result = result + valueInt;                 break;
+                        case 'MM'  : result = result + valueInt/60;              break;
+                        case 'mmm' : result = result + toDecimal(valueStr)/60;   break;
+                        case 's'   : result = result + toDecimal(valueStr)/3600; break;
+                        case 'SS'  : result = result + valueInt/3600;            break;
+                        case 'dddd': result = result + toDecimal(valueStr);      break;
                     }
                     convertMaskIndex++;
                     if (convertMaskIndex >= options.convertMask.length)
                         break;
                 }
             }
+
             return sign*result;
         },
 
